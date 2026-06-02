@@ -1,0 +1,25 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: soc-agent-backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: soc-agent-frontend
+    command: npm run dev
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend

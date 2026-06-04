@@ -15,6 +15,7 @@ export default function Home() {
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   async function analyzeAlert() {
     setLoading(true);
@@ -47,6 +48,21 @@ export default function Home() {
       setLoading(false);
     }
   }
+
+  async function analyzeFile() {
+    if (!selectedFile) return;
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    const response = await fetch("http://localhost:8000/api/analyze/file/", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await response.json();
+    setResult(data);
+  }
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-7xl px-6 py-8">
@@ -60,23 +76,6 @@ export default function Home() {
             triage.
           </p>
         </header>
-
-        <section className="grid gap-4 md:grid-cols-3">
-          <div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-            <p className="text-sm text-slate-400">Active Alerts</p>
-            <p className="mt-2 text-3xl font-bold">12</p>
-          </div>
-
-          <div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-            <p className="text-sm text-slate-400">High Severity</p>
-            <p className="mt-2 text-3xl font-bold text-red-400">3</p>
-          </div>
-
-          <div className="rounded-xl border border-slate-800 bg-slate-900 p-5">
-            <p className="text-sm text-slate-400">AI Analyses</p>
-            <p className="mt-2 text-3xl font-bold text-cyan-400">27</p>
-          </div>
-        </section>
 
         <section className="mt-8 grid gap-6 lg:grid-cols-2">
           <div className="rounded-xl border border-slate-800 bg-slate-900 p-6">
@@ -157,12 +156,18 @@ export default function Home() {
                 <input
                   type="file"
                   accept=".txt,.log,.json,.csv"
+                  onChange={(event) =>
+                    setSelectedFile(event.target.files?.[0] ?? null)
+                  }
                   className="mt-4 block text-sm text-slate-400 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-800 file:px-4 file:py-2 file:text-slate-100 hover:file:bg-slate-700"
                 />
               </div>
             </div>
 
-            <button className="mt-4 rounded-lg bg-slate-100 px-5 py-2 font-medium text-slate-950 hover:bg-white">
+            <button
+              className="mt-4 rounded-lg bg-slate-100 px-5 py-2 font-medium text-slate-950 hover:bg-white"
+              onClick={analyzeFile}
+            >
               Analyze File
             </button>
           </div>

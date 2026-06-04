@@ -26,3 +26,31 @@ def analyze_alert(request):
             "received_chars": len(alert_text),
         }
     )
+
+
+@api_view(["POST"])
+def analyze_file(request):
+    uploaded_file = request.FILES.get("file")
+
+    if uploaded_file is None:
+        return Response(
+            {"error": "No file uploaded"},
+            status=400
+        )
+
+    file_content = uploaded_file.read().decode("utf-8", errors="ignore")
+
+    return Response(
+        {
+            "severity": "Medium",
+            "mitre": "T1059",
+            "classification": "Uploaded Log File Analysis",
+            "recommendations": [
+                "Review suspicious commands",
+                "Check related user activity",
+                "Correlate with endpoint logs",
+            ],
+            "filename": uploaded_file.name,
+            "received_chars": len(file_content),
+        }
+    )

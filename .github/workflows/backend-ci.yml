@@ -10,6 +10,23 @@ jobs:
   backend:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+        ports:
+          - 5432:5432
+
+    env:
+      POSTGRES_DB: test_db
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_pass
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+
     defaults:
       run:
         working-directory: backend

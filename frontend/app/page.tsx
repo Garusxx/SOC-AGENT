@@ -1,4 +1,52 @@
+"use client";
+
+import { useState } from "react";
+
+type AnalysisResult = {
+  severity: string;
+  mitre: string;
+  classification: string;
+  recommendations: string[];
+  received_chars: number;
+};
+
 export default function Home() {
+  const [alertText, setAlertText] = useState("");
+  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function analyzeAlert() {
+    setLoading(true);
+    setError("");
+    setResult(null);
+
+    try {
+      const response = await fetch(
+        "http://localhost:8000/api/analyze/manual/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            alert: alertText,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("API request failed");
+      }
+
+      const data = await response.json();
+      setResult(data);
+    } catch {
+      setError("Could not analyze alert. Check if backend is running.");
+    } finally {
+      setLoading(false);
+    }
+  }
   return (
     <main className="min-h-screen bg-slate-950 text-slate-100">
       <div className="mx-auto max-w-7xl px-6 py-8">
@@ -39,13 +87,58 @@ export default function Home() {
             </p>
 
             <textarea
+              value={alertText}
+              onChange={(event) => setAlertText(event.target.value)}
               className="mt-4 h-64 w-full rounded-lg border border-slate-700 bg-slate-950 p-4 text-sm text-slate-100 outline-none focus:border-cyan-500"
               placeholder="Paste alert or log here..."
             />
 
-            <button className="mt-4 rounded-lg bg-cyan-500 px-5 py-2 font-medium text-slate-950 hover:bg-cyan-400">
-              Analyze Alert
+            <button
+              onClick={analyzeAlert}
+              disabled={loading || !alertText.trim()}
+              className="mt-4 rounded-lg bg-cyan-500 px-5 py-2 font-medium text-slate-950 hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loading ? "Analyzing..." : "Analyze Alert"}
             </button>
+            {error && (
+              <div className="mt-4 rounded-lg border border-red-800 bg-red-950 p-4 text-sm text-red-300">
+                {error}
+              </div>
+            )}
+
+            {result && (
+              <div className="mt-4 rounded-lg border border-slate-700 bg-slate-950 p-4">
+                <h3 className="font-semibold text-cyan-400">Analysis Result</h3>
+
+                <div className="mt-3 space-y-2 text-sm">
+                  <p>
+                    <span className="text-slate-400">Severity:</span>{" "}
+                    <span className="font-medium text-red-400">
+                      {result.severity}
+                    </span>
+                  </p>
+
+                  <p>
+                    <span className="text-slate-400">MITRE:</span>{" "}
+                    <span className="font-medium">{result.mitre}</span>
+                  </p>
+
+                  <p>
+                    <span className="text-slate-400">Classification:</span>{" "}
+                    <span className="font-medium">{result.classification}</span>
+                  </p>
+
+                  <div>
+                    <p className="text-slate-400">Recommendations:</p>
+                    <ul className="mt-2 list-inside list-disc space-y-1">
+                      {result.recommendations.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="rounded-xl border border-slate-800 bg-slate-900 p-6">

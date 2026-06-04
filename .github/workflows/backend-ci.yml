@@ -48,8 +48,8 @@ jobs:
       - name: Django check
         run: python manage.py check
 
-      - name: Run migrations check
-        run: python manage.py migrate --check
+      - name: Run migrations
+        run: python manage.py migrate
 
       - name: Run tests
         run: python manage.py test

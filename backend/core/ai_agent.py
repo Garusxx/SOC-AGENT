@@ -5,10 +5,33 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = None
+
+api_key = os.getenv("OPENAI_API_KEY")
+
+if api_key:
+    client = OpenAI(api_key=api_key)
 
 
 def analyze_log_with_ai(log_text: str, source: str = "manual") -> dict:
+    
+    
+    if client is None:
+        return {
+            "severity": "Low",
+            "mitre": "N/A",
+            "classification": "AI Disabled",
+            "summary": "OPENAI_API_KEY is not configured",
+            "indicators": [],
+            "recommendations": [
+                "Configure OPENAI_API_KEY"
+            ],
+            "raw_log_explanation": "AI backend unavailable",
+            "source": source,
+            "received_chars": len(log_text),
+        }
+        
+    
     if not log_text or not log_text.strip():
         return {
             "severity": "Low",

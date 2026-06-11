@@ -28,7 +28,10 @@ def analyze_alert(request):
 
         analysis = analyze_log_with_ai(
             log_text=parsed["content"],
-            source=f"manual:{parsed['log_type']}"
+            source=f"manual:{parsed['log_type']}",
+            log_type=parsed["log_type"],
+            risk_score=parsed.get("risk_score", 0),
+            parser_indicators=parsed.get("indicators", []),
         )
 
         analysis["parser"] = {
@@ -72,7 +75,10 @@ def analyze_file(request):
 
         analysis = analyze_log_with_ai(
             log_text=parsed["content"],
-            source=f"{uploaded_file.name}:{parsed['log_type']}"
+            source=f"{uploaded_file.name}:{parsed['log_type']}",
+            log_type=parsed["log_type"],
+            risk_score=parsed.get("risk_score", 0),
+            parser_indicators=parsed.get("indicators", []),
         )
 
         analysis["filename"] = uploaded_file.name
@@ -80,6 +86,8 @@ def analyze_file(request):
             "log_type": parsed["log_type"],
             "total_lines": parsed["total_lines"],
             "selected_lines": parsed["selected_lines"],
+            "risk_score": parsed.get("risk_score", 0),
+            "indicators": parsed.get("indicators", []),
         }
 
         return Response(analysis)
